@@ -1,4 +1,4 @@
-# Host a Secure Static Website On S3 Bucket With Cloudfront And Route53
+# Host a Secure Static Website On S3 Bucket With Cloudfront, Route53 And ACM For SSL
 
 Architecure
 ![1  architecture](https://user-images.githubusercontent.com/99888333/221614737-32b60c4a-ad0f-4e21-9b45-6c12e48120b6.jpg)
