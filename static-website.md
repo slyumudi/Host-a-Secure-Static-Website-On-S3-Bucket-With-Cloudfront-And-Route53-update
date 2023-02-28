@@ -209,7 +209,7 @@ Cloudfront will take some minutes to deploy the configurations
 
 **The last step is to add the records in Route 53.**
 _**Add Cloudfront Distribution to Route 53**_
-1. Navigate to Route 53, click on create record
+1. Navigate to Route 53, click on create record **before creating an A record for the same domain to your distribution, ensure the initial A record created for this domain mapping it to s3 endpoint is deleted as you cant have two A records of same domain pointing to different targets**
 2. For this A record, leave the _**Record name**_blank
 3. Toggle the Alias button and select _**Alias Cloudfront Distribution under**_ _**Route traffic to**_ field.
 4. select the cloudfront distribution for `yourdomain.com`
@@ -226,7 +226,7 @@ Enter your domain in the browser `yourdomain.com`.
 
 Notice the lock icon in the URL, this means your website is secure.
 
-**`Congratulation!!!`** You have successfully deployed a static website via HTTP and HTTPS protocols in AWS.
+**`Congratulation!!!`** You have successfully deployed a static website via HTTP and HTTPS protocols in AWS. Navigate to **`cleanup.md`** in this repo to cleanup your account.
 
 
 
