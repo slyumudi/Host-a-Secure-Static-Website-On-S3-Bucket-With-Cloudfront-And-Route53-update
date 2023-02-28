@@ -92,6 +92,150 @@ You can see your S3 static website endpoint by navigating to your bucket propert
 
 ![11](https://user-images.githubusercontent.com/99888333/221994674-ee136714-952b-4e2b-984b-30d11c6e52bf.png)
 
+**`This is fine but not memorable nor user friendly, hence we are going to setup route 53.`**
+
+**Configure S3 website Endpoint with Route 53**
+On your AWS dashboard, search for Route 53 in the search bar.
+
+![12](https://user-images.githubusercontent.com/99888333/221997279-29a25fc6-9ac3-4245-ab64-1a43f941096f.png)
+
+**Create a Hosted zone** 
+1. Navigate to _Route 53_ > _Hosted zones_ > _Create hosted zone_
+2. Under _**Domain name**_, enter your domain name (`yourdomainname.com`)
+3. Ensure under _**Type**_, _**Public hosted zone**_ is selected and click _Create hosted zone_.
+At this point, two records are created _**NS**_ (Name Servers) and _**CNAME**_(Canonical Name record).
+
+![13](https://user-images.githubusercontent.com/99888333/221997630-15791718-c4ba-4c08-9149-41a5c9fefe73.png)
+
+Finally, We will add an Alias record, mapping your `_**yourdomain.com**_` to the s33 website endpoint
+
+**Add An A Record**
+_For the A record_
+
+1. Click on Create record
+2. select `simple record` and click **Next**
+3. Click define simple Record
+4. Leave _**Record name**_ field blank,
+5. Toggle the Alias button (If not seen, do not worry)
+6. Select the **`A`** record type
+7. Under _**Route traffic to**_ select _**Alias to S3 website endpoint**_
+8. Choose the region where your bucket was created
+9. select the bucket
+10. Proceed and create the record
+
+![14](https://user-images.githubusercontent.com/99888333/221998623-f6131d3e-ce85-477f-9287-083c02066f28.png)
+
+It will take few seconds for the records to _SYNC_
+
+_**Test website in the browser**_
+Enter your domain in the browser _If your website is showing, sometimes you might need to clear your browser's cache._   
+
+![15](https://user-images.githubusercontent.com/99888333/221999075-5c67e82c-e567-4dc2-8e0b-6051451daf3d.png)
+
+Well, this is fine but **`not secure`** as you can see from the image above.
+
+Let's make our website secure and increase the speed of distribution round the world by configuring a content delivery network - _**`AWS Cloudfront`**_.
+
+
+## Static Website Setup with HTTPS protocol using AWS Cloudfront and AWS Certificate Manager ACM.
+
+**Create two certificates using AWS certificate Manager (ACM)**
+
+To make ensure your website is secure, you need a Secure Sockets Layer (SSL) certificate. On the search bar, type certificate manager and click enter.
+
+![16](https://user-images.githubusercontent.com/99888333/222000004-222daa1d-64f0-408a-8a1f-b1b8f30f738e.png)
+
+Click on _**`Request certificate`**_, ensure _**`Request a public certificate`**_ is selected and click next
+
+![17](https://user-images.githubusercontent.com/99888333/222000200-14d0d2bd-b6cf-42e4-bf7e-f8a95958ff90.png)
+
+3. Under _**`Fully qualified domain name`**_ enter your first domain name and click on _**Add another name to this certificate**_ to add the second domain name. **`If you have a subdomain you can include it here. Note how i used the wild card *. infront of my main domain. This will automatically include this certificate to any subsequent subdomain i create later on such as www.sensiniblog.click, dev.sensiniblog.click, test.sensiniblog.click etc`**
+4. Ensure DNS validation is selected. (This is usually faster). This is done to ensure you are the owner of the domain name.
+5. Click on Request.
+
+![18](https://user-images.githubusercontent.com/99888333/222001436-ff3e16aa-215b-4976-8449-59057e59e1e0.png)
+
+1. Click on **View certificate** on the top of the page or click on **List certificates**
+2. Click on **Create records in Route 53**_ and click _**create records** at bottom of the page to confirm.
+
+![19](https://user-images.githubusercontent.com/99888333/222002582-d00356cc-276e-4287-ae86-db5b45d26195.png)
+
+This will take some minutes but it's usually faster if purchased your domain from Amazon. Verify that your certifiacte is issued and has changed from `pending state` to `success`
+
+**Setup AWS Cloudfront**
+
+Navigate to AWS Cloudfront on your dashboard.
+
+![20](https://user-images.githubusercontent.com/99888333/222004390-7592fb5f-0828-4ed8-9af2-3ef2bc7282bd.png)
+
+1. Click **Create a CloudFront distribution**
+2. Under **Origin domain**_ select the bucket that holds your website content
+3. Under **Origin access**, select **Origin access control settings** **NOTE** `you can select OAI option but this will mot only create the access policy for s3, but give you the option to automatically update your s3 bucket with the policy. The sole purpose of using OAC in this demo is to manually update the s3 bucket policy`
+4. Under **Origin access control**, click on _**create control setting**_ this will allow amazon to automatically create an access policy for your S3 bucket for cloudfront.
+
+![21](https://user-images.githubusercontent.com/99888333/222004440-df5661c2-77a5-4f20-8a3e-08eb4a20d146.png)
+
+Accept the name and click **creat**
+
+![22](https://user-images.githubusercontent.com/99888333/222004587-35a29226-94fd-4b8a-91e2-61eb47c14217.png)
+
+Scroll down to **Viewer** and select **Redirect HTTP to HTTPS**
+
+![23](https://user-images.githubusercontent.com/99888333/222004758-c174fb7a-7441-459d-b1b4-991e774c1ee4.png)
+
+Scroll down to **Alternate domain name (CNAME)**, click on **Add item** and enter your domain name `yourdomain.com` 
+Associate your custom ssl certificate you just created to this distribution as shown below
+
+![24](https://user-images.githubusercontent.com/99888333/222005327-1197df67-214a-494d-b81d-7c89b37fce8a.png)
+
+- Scroll down to **Default root object**, enter default page name - in this **`index.html`** and click on **create distribution**
+
+![25](https://user-images.githubusercontent.com/99888333/222005764-68fe8e12-e975-4c53-85bb-c66e2ee9e3dc.png)
+
+**Finally, we need to give permission to cloudfront on S3.** 
+1. Click on the newly created distribution and click on the **origins tab**
+2. Under **Origins** selected the origin and click on edit
+
+![26](https://user-images.githubusercontent.com/99888333/222005950-952ae856-5939-4040-8476-6be955c9a5bc.png)
+
+Scroll down to **Bucket policy** and click on **Copy policy**
+
+![27](https://user-images.githubusercontent.com/99888333/222006126-e062efd7-b0c0-4026-a467-d50a097f0cb4.png)
+
+Navigate to your S3 bucket **permissions** tab, scroll down to **Bucket policy**, click on edit, remove the initial policy that made our bucket public, and paste the policy you copied from the cloudfront distribution and save changes. Because this policy contains the cloudfront distribution ID and OAC/OAI, cloudfront is able to access your bucket and serve its content to the public without exposing the bucket to the public.
+
+![28](https://user-images.githubusercontent.com/99888333/222007781-209694bf-85fa-4e6e-9695-7c8976935197.png)
+Cloudfront will take some minutes to deploy the configurations
+
+**The last step is to add the records in Route 53.**
+_**Add Cloudfront Distribution to Route 53**_
+1. Navigate to Route 53, click on create record
+2. For this A record, leave the _**Record name**_blank
+3. Toggle the Alias button and select _**Alias Cloudfront Distribution under**_ _**Route traffic to**_ field.
+4. select the cloudfront distribution for `yourdomain.com`
+5. click on _**create record**_.
+The record will take some seconds to _**SYNC**_
+
+![30](https://user-images.githubusercontent.com/99888333/222008345-36841853-684d-4e24-a753-0d1e70de6d7d.png)
+
+**`Test your secured website with low-latency in the browser`**
+
+Enter your domain in the browser `yourdomain.com`.
+
+![29](https://user-images.githubusercontent.com/99888333/222008510-d763d48e-b5f5-4f91-bc15-320203fab749.png)
+
+Notice the lock icon in the URL, this means your website is secure.
+
+**`Congratulation!!!`** You have successfully deployed a static website via HTTP and HTTPS protocols in AWS.
+
+
+
+
+
+
+
+
+
 
 
 
